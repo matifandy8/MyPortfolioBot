@@ -45,12 +45,10 @@ export default function ChatInterface() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
-      {/* Chat Header */}
       <div className="p-4 border-b border-gray-700">
         <h1 className="text-xl font-semibold">Chat with Agent</h1>
       </div>
 
-      {/* Chat Messages Area */}
       <div className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.map((message, index) => (
@@ -87,7 +85,6 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      {/* Chat Input Area */}
       <div className="p-4 border-t border-gray-700">
         <div className="flex gap-2 max-w-4xl mx-auto">
           <input

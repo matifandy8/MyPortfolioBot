@@ -1,50 +1,64 @@
-'use client'
+"use client";
 
-import { useState } from "react"
-import { cn } from "@/app/lib/utils"
+import { useState } from "react";
+import { cn } from "@/app/lib/utils";
 
 interface Message {
-  role: "agent" | "user"
-  content: string
-  timestamp: string
+  role: "user" | "agent";
+  content: string;
+  timestamp: string;
 }
 
 export default function ChatInterface() {
-  const [input, setInput] = useState("")
+  const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "agent",
-      content: "Hello, I am a generative AI agent. How may I assist you today?",
-      timestamp: "4:08:28 PM"
+      content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?",
+      timestamp: new Date().toLocaleTimeString(),
     },
-    {
-      role: "user",
-      content: "Hi, I'd like to check my bill.",
-      timestamp: "4:08:37 PM"
-    },
-    {
-      role: "agent",
-      content: "Please hold for a second.\n\nOk, I can help you with that\n\nI'm pulling up your current bill information\n\nYour current bill is $150, and it is due on August 31, 2024.\n\nIf you need more details, feel free to ask!",
-      timestamp: "4:08:37 PM"
-    }
-  ])
+  ]);
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
-    if (input) {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          role: "user",
-          content: input,
-          timestamp: new Date().toLocaleTimeString()
-        }
-      ])
-      setInput("")
+
+  const handleSend = async () => {
+    setLoading(true)
+    if (!input.trim()) return;
+
+    const newUserMessage: Message = {
+      role: "user",
+      content: input,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+
+    setMessages((prev) => [...prev, newUserMessage]);
+    setInput("");
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+
+      const data = await response.json();
+
+      const newBotMessage: Message = {
+        role: "agent",
+        content: data.reply || "Sorry, I didn't understand that.",
+        timestamp: new Date().toLocaleTimeString(),
+      };
+
+      setMessages((prev) => [...prev, newBotMessage]);
+      setLoading(false)
+    } catch (error) {
+      console.error("Error:", error);
+      setLoading(false)
     }
-  }
+  };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
+    <div className="flex flex-col bg-gray-900 text-white">
       <div className="p-4 border-b border-gray-700">
         <h1 className="text-xl font-semibold">Chat with Agent</h1>
       </div>
@@ -78,7 +92,7 @@ export default function ChatInterface() {
                     {message.timestamp}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap">{message.content.replace(/<think>[\s\S]*?<\/think>/g, '').trim()}</p>
               </div>
             </div>
           ))}
@@ -98,7 +112,7 @@ export default function ChatInterface() {
             onClick={handleSend}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
           >
-            Send
+            {loading ? "Loading..." : "Send"}
           </button>
         </div>
       </div>

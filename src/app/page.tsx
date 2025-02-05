@@ -6,7 +6,7 @@ export default function Home() {
       <nav className="w-full p-4 bg-black">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-white">My Portfolio bot</h1>
-          <a href="/chat" className="text-white">
+          <a href="/about" className="text-white">
             About
           </a>
         </div>

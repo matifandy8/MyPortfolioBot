@@ -20,6 +20,14 @@ export default function ChatInterface() {
   ]);
   const [loading, setLoading] = useState(false);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      
+      handleSend();
+    }
+  };
+
 
   const handleSend = async () => {
     setLoading(true)
@@ -107,6 +115,7 @@ export default function ChatInterface() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-700 rounded-md bg-gray-800 text-white focus:outline-none focus:border-blue-500"
+            onKeyDown={handleKeyDown}
           />
           <button
             onClick={handleSend}

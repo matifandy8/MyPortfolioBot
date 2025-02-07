@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/app/lib/utils";
+import Image from "next/image"
 
 interface Message {
   role: "user" | "agent";
@@ -11,26 +12,37 @@ interface Message {
 
 export default function ChatInterface() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "agent",
-      content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?",
-      timestamp: new Date().toLocaleTimeString(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([ { role: "agent", content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?", timestamp: new Date().toLocaleTimeString() } ]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const savedMessages = localStorage.getItem("chatMessages");
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    } else {
+      setMessages([
+        {
+          role: "agent",
+          content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?",
+          timestamp: new Date().toLocaleTimeString(),
+        },
+      ]);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
+  }, [messages]);
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       event.preventDefault();
-      
       handleSend();
     }
   };
 
-
   const handleSend = async () => {
-    setLoading(true)
+    setLoading(true);
     if (!input.trim()) return;
 
     const newUserMessage: Message = {
@@ -58,10 +70,10 @@ export default function ChatInterface() {
       };
 
       setMessages((prev) => [...prev, newBotMessage]);
-      setLoading(false)
+      setLoading(false);
     } catch (error) {
       console.error("Error:", error);
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -82,7 +94,9 @@ export default function ChatInterface() {
               )}
             >
               {message.role === "agent" && (
-                <div className="h-8 w-8 rounded-full bg-gray-700 flex-shrink-0" />
+                   <div className="flex items-center gap-2">
+                   <Image src="/chatbot.png" alt="Chatbot" width={50} height={50} className="rounded-full" />
+                 </div>
               )}
               <div
                 className={cn(
@@ -100,7 +114,9 @@ export default function ChatInterface() {
                     {message.timestamp}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{message.content.replace(/<think>[\s\S]*?<\/think>/g, '').trim()}</p>
+                <p className="text-sm whitespace-pre-wrap">
+                  {message.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()}
+                </p>
               </div>
             </div>
           ))}
@@ -126,5 +142,5 @@ export default function ChatInterface() {
         </div>
       </div>
     </div>
-  )
+  );
 }

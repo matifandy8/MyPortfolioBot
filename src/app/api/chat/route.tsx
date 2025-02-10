@@ -18,6 +18,7 @@ const validateMessage = (message : string) => {
   if (message.length < MIN_MESSAGE_LENGTH) {
     return { valid: false, reason: "Your message is too short. Please ask a more detailed question." };
   }
+  
 
   const words = message.toLowerCase().split(/\s+/);
   const hasMeaningfulWords = words.some((word: string) => !stopwords.has(word) && word.length >= 2);

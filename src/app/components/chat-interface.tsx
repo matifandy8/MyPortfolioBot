@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/app/lib/utils";
 import Image from "next/image"
 
@@ -10,28 +10,34 @@ interface Message {
   timestamp: string;
 }
 
+const initialMessage: Message = {
+  role: "agent",
+  content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?",
+  timestamp: new Date().toLocaleTimeString(),
+};
+
 export default function ChatInterface() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([ { role: "agent", content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?", timestamp: new Date().toLocaleTimeString() } ]);
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     const savedMessages = localStorage.getItem("chatMessages");
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
     } else {
-      setMessages([
-        {
-          role: "agent",
-          content: "Hello, I am your personal chatbot for Matías' portfolio. How can I help you today?",
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
+      setMessages([initialMessage]);
     }
   }, []);
 
+
   useEffect(() => {
-    localStorage.setItem("chatMessages", JSON.stringify(messages));
+    if (messages.length > 1) {
+      localStorage.setItem("chatMessages", JSON.stringify(messages));
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -43,7 +49,7 @@ export default function ChatInterface() {
 
   const handleSend = async () => {
     setLoading(true);
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
     const newUserMessage: Message = {
       role: "user",
@@ -76,6 +82,7 @@ export default function ChatInterface() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex flex-col bg-gray-900 text-white">
@@ -115,11 +122,12 @@ export default function ChatInterface() {
                   </span>
                 </div>
                 <p className="text-sm whitespace-pre-wrap">
-                  {message.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()}
+                {message.content.replace(/<think\b[^>]*>[\s\S]*?<\/think>/gi, "").trim()}
                 </p>
               </div>
             </div>
           ))}
+         <div ref={messagesEndRef} />
         </div>
       </div>
 
@@ -135,6 +143,7 @@ export default function ChatInterface() {
           />
           <button
             onClick={handleSend}
+            disabled={loading || !input.trim()}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
           >
             {loading ? "Loading..." : "Send"}

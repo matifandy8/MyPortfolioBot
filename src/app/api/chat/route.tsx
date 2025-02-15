@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     }
 
     const userCookies = await cookies();
-    let questionCount = parseInt(userCookies.get("questionCount")?.value || "0");
+    const questionCount = parseInt(userCookies.get("questionCount")?.value || "0");
 
     if (questionCount >= 5) {
       return NextResponse.json({ reply: "You have reached the question limit (5)." });
